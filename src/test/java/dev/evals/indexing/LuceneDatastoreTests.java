@@ -1,5 +1,7 @@
-package dev.evals;
+package dev.evals.indexing;
 
+import dev.evals.model.SearchRequest;
+import dev.evals.model.SearchResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.indexing;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;

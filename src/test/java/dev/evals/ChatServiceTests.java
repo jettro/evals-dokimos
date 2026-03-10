@@ -1,5 +1,7 @@
 package dev.evals;
 
+import dev.evals.indexing.IndexingPipeline;
+import dev.evals.model.RagResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

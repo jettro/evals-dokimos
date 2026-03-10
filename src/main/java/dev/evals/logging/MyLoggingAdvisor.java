@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.logging;
 
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;

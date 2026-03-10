@@ -1,5 +1,7 @@
-package dev.evals;
+package dev.evals.indexing;
 
+import dev.evals.model.SearchRequest;
+import dev.evals.model.SearchResponse;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;

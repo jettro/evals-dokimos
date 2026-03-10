@@ -1,5 +1,11 @@
 package dev.evals;
 
+import dev.evals.indexing.LuceneDatastore;
+import dev.evals.logging.MyLoggingAdvisor;
+import dev.evals.model.RagResponse;
+import dev.evals.model.SearchRequest;
+import dev.evals.model.SearchResponse;
+import dev.evals.model.WhiskySearchResult;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;

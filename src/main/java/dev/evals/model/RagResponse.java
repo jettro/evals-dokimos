@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.model;
 
 import java.util.List;
 
