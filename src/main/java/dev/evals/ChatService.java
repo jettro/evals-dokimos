@@ -143,24 +143,28 @@ public class ChatService {
                                 ## Steps to follow
                                 1. Run `open https://slijterijdehelm.nl`
                                 2. Run `snapshot -i` to find interactive elements
-                                3. FIRST dismiss the cookie popup — it blocks everything else.
-                                   Click the button labeled "Cookies accepteren".
-                                   Then run `snapshot -i` again to get fresh refs.
-                                4. NOW dismiss the age verification overlay.
-                                   Click the link labeled "ouder dan 18 jaar".
-                                   Then run `snapshot -i` again to get fresh refs.
-                                5. Find the search field (searchbox "Zoeken") and fill it:
+                                3. Handle any popups/overlays that may appear before searching.
+                                   Look at the snapshot output and:
+                                   - If you see a cookie consent popup (buttons containing words like
+                                     "accepteren", "cookies", "toestaan", or "akkoord"), click the
+                                     accept button. Then re-snapshot.
+                                   - If you see an age verification overlay (links/buttons containing
+                                     "ouder dan 18" or "18 jaar" or similar), click to confirm.
+                                     Then re-snapshot.
+                                   - If neither popup is visible, just continue to the next step.
+                                   Do NOT get stuck looking for popups that aren't there.
+                                4. Find the search field (a searchbox, often labeled "Zoeken") and fill it:
                                    `fill @<ref> "<whisky name>"`
-                                6. Submit: `press Enter`
-                                7. Wait: `wait --load networkidle`
-                                8. Re-snapshot: `snapshot -i` to see search results
-                                9. Click the most relevant product link matching the whisky name
-                                10. Wait: `wait --load networkidle`
-                                11. Extract the product info using a scoped snapshot:
+                                5. Submit: `press Enter`
+                                6. Wait: `wait --load networkidle`
+                                7. Re-snapshot: `snapshot -i` to see search results
+                                8. Click the most relevant product link matching the whisky name
+                                9. Wait: `wait --load networkidle`
+                                10. Extract the product info using a scoped snapshot:
                                     `snapshot -s ".elementor-location-single"`
                                     This returns the product name, price, description tabs, and details
                                     without all the navigation noise.
-                                12. Close: `close`
+                                11. Close: `close`
                                 
                                 ## What to extract
                                 From the scoped snapshot, extract and return:

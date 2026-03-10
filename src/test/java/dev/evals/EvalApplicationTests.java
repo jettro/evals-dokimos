@@ -2,6 +2,7 @@ package dev.evals;
 
 import dev.dokimos.core.*;
 import dev.dokimos.core.evaluators.ContextualRelevanceEvaluator;
+import dev.dokimos.core.evaluators.ExactMatchEvaluator;
 import dev.dokimos.core.evaluators.FaithfulnessEvaluator;
 import dev.dokimos.core.evaluators.LLMJudgeEvaluator;
 import dev.dokimos.springai.SpringAiSupport;
@@ -174,6 +175,51 @@ class EvalApplicationTests {
                 () -> assertTrue(result.averageScore("Context Relevance") >= 0.8,
                         "Context Relevance: " + result.averageScore("Context Relevance"))
                 );
+    }
+
+    @Test
+    void checkChatTools() {
+        Dataset dataset = Dataset.builder()
+                .name("test-dataset")
+                .description("Test dataset for evaluation")
+                .addExample(Example.of(
+                        "Find alcohol percentage of the Togouchi Peated Cask",
+                        "40%"
+                ))
+                .build();
+
+        Task task = example -> {
+            String query = example.input();
+
+            var response = chatService.chatTools(query);
+
+            return Map.of(
+                    "output", response.alcoholPercentage()
+            );
+        };
+
+        List<Evaluator> evaluators = List.of(
+                ExactMatchEvaluator.builder()
+                        .name("Exact Match Alcohol Percentage")
+                        .threshold(1.0)
+                        .build()
+        );
+
+        ExperimentResult result = Experiment.builder()
+                .name("Agent Evaluation")
+                .dataset(dataset)
+                .task(task)
+                .evaluators(evaluators)
+                .build()
+                .run();
+
+        printExperimentResult(result);
+
+        assertAll(
+                () -> assertTrue(result.averageScore("Exact Match Alcohol Percentage") >= 1,
+                        "Exact Match Alcohol Percentage: " + result.averageScore("Exact Match Alcohol Percentage"))
+        );
+
     }
 
 
