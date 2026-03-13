@@ -6,6 +6,7 @@ import dev.dokimos.core.evaluators.ExactMatchEvaluator;
 import dev.dokimos.core.evaluators.FaithfulnessEvaluator;
 import dev.dokimos.core.evaluators.LLMJudgeEvaluator;
 import dev.dokimos.springai.SpringAiSupport;
+import dev.evals.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.model.ChatModel;
