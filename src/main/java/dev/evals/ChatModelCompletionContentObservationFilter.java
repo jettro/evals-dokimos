@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -56,10 +57,27 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
     }
 
     private List<String> processCompletion(ChatModelObservationContext context) {
-        if (context.getResponse() != null && (context.getResponse()).getResults() != null && !CollectionUtils.isEmpty((context.getResponse()).getResults())) {
-            return !StringUtils.hasText((context.getResponse()).getResult().getOutput().getText()) ? List.of() : (context.getResponse()).getResults().stream().filter((generation) -> generation.getOutput() != null && StringUtils.hasText(generation.getOutput().getText())).map((generation) -> generation.getOutput().getText()).toList();
-        } else {
+        if (context.getResponse() == null || context.getResponse().getResults() == null
+                || CollectionUtils.isEmpty(context.getResponse().getResults())) {
             return List.of();
         }
+
+        List<String> completions = new ArrayList<>();
+        for (var generation : context.getResponse().getResults()) {
+            if (generation.getOutput() == null) {
+                continue;
+            }
+            // Capture text output
+            if (StringUtils.hasText(generation.getOutput().getText())) {
+                completions.add(generation.getOutput().getText());
+            }
+            // Capture tool calls from the assistant message
+            if (!CollectionUtils.isEmpty(generation.getOutput().getToolCalls())) {
+                for (var toolCall : generation.getOutput().getToolCalls()) {
+                    completions.add("[tool_call] " + toolCall.name() + "(" + toolCall.arguments() + ")");
+                }
+            }
+        }
+        return completions;
     }
 }
