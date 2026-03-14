@@ -73,5 +73,29 @@ The project is set up to use Dokimos for evaluating the quality of AI responses.
 mvn test
 ```
 
+## Observability
+From the manual of langfuse:
+
+```bash
+git clone https://github.com/langfuse/langfuse.git
+cd langfuse
+
+docker compose up
+```
+
+Open the url: http://localhost:3000
+
+## Connecting to Langfuse
+
+To connect this application to your local Langfuse instance, ensure you have the following environment variables set:
+- `LANGFUSE_PUBLIC_KEY`: Your Langfuse Public Key.
+- `LANGFUSE_SECRET_KEY`: Your Langfuse Secret Key.
+
+These keys are used to authenticate with Langfuse's OTLP endpoint: `http://localhost:3000/api/public/otlp/v1/traces`.
+
+Traces for Spring AI chat calls are automatically sent when the application is running, provided the observability configuration in `application.properties` is active.
+
+
+
 ## 📝 License
 This project is for experimental and evaluation purposes.
