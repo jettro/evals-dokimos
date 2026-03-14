@@ -115,6 +115,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- AOP for tool call observation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!-- Micrometer Observation -> OpenTelemetry bridge -->
         <dependency>
             <groupId>io.micrometer</groupId>
