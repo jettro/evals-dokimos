@@ -53,14 +53,7 @@ public class ChatService {
         this.browserTool = browserTool;
         this.extractFromPageTool = extractFromPageTool;
 
-        ChatOptions chatOptions = ChatOptions.builder()
-                .model("gpt-5-mini")
-                .temperature(1.0)
-                .build();
-
-        this.chatClient = chatClientBuilder
-                .defaultOptions(chatOptions)
-                .build();
+        this.chatClient = chatClientBuilder.build();
     }
 
     public String chat(String message) {
