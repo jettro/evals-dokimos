@@ -1,0 +1,16 @@
+### POST request to send a chat message
+POST http://localhost:8080/chat
+Content-Type: application/json
+
+{
+  "message": "Where does Whisky originate from?"
+}
+
+### POST to chat and rag
+POST http://localhost:8080/chatrag
+Content-Type: application/json
+
+{
+  "message": "I am looking for information on a whisky on a beer cask?"
+}
+
