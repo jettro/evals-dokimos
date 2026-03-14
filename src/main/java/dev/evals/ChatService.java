@@ -238,7 +238,6 @@ public class ChatService {
                   nose/taste/finish notes
                 
                 If no results are found, clearly state that.
-                Always close the browser when done.
                 """;
 
 

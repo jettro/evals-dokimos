@@ -1,10 +1,20 @@
 package dev.evals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dokimos.core.*;
+import dev.dokimos.core.agents.AgentTrace;
+import dev.dokimos.core.agents.ToolCall;
+import dev.dokimos.core.agents.ToolDefinition;
 import dev.dokimos.core.evaluators.ContextualRelevanceEvaluator;
 import dev.dokimos.core.evaluators.ExactMatchEvaluator;
 import dev.dokimos.core.evaluators.FaithfulnessEvaluator;
 import dev.dokimos.core.evaluators.LLMJudgeEvaluator;
+import dev.dokimos.core.evaluators.agents.TaskCompletionEvaluator;
+import dev.dokimos.core.evaluators.agents.ToolArgumentHallucinationEvaluator;
+import dev.dokimos.core.evaluators.agents.ToolCallValidityEvaluator;
+import dev.dokimos.core.evaluators.agents.ToolCorrectnessEvaluator;
 import dev.dokimos.springai.SpringAiSupport;
 import dev.evals.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -179,7 +189,7 @@ class EvalApplicationTests {
     }
 
     @Test
-    void checkChatTools() {
+    void checkChatRagTools() {
         Dataset dataset = Dataset.builder()
                 .name("test-dataset")
                 .description("Test dataset for evaluation")
@@ -192,10 +202,10 @@ class EvalApplicationTests {
         Task task = example -> {
             String query = example.input();
 
-            var response = chatService.chatTools(query);
+            var response = chatService.chatRAGTools(query);
 
             return Map.of(
-                    "output", response.alcoholPercentage()
+                    "output", response.result().alcoholPercentage()
             );
         };
 
@@ -223,6 +233,66 @@ class EvalApplicationTests {
 
     }
 
+    @Test
+    void checkValidityToolCalls() {
+
+        List<ToolDefinition> tools = List.of(
+                ToolDefinition.of("searchWhisky", "Search whisky names", Map.of("query", "string")),
+                ToolDefinition.of("extractFromPage", "Extract information from a product page", Map.of("url", "string"))
+        );
+
+        JudgeLM judge = SpringAiSupport.asJudge(chatModel);
+
+        var response = chatService.chatRAGTools("Find information about a beer cask whisky");
+        
+        List<ToolCall> arguments = response.toolCalls().stream().map(tc -> {
+            return ToolCall.of(tc.name(), parseArguments(tc.arguments()));
+        }).toList();
+
+        AgentTrace trace = AgentTrace.builder()
+                .toolCalls(arguments)
+                .addToolCall(ToolCall.of("searchWhisky", Map.of("query", "beer cask whisky")))
+                .addToolCall(ToolCall.of("extractFromPage", Map.of("url", "test")))
+                .finalResponse(response.result().toString())
+                .build();
+
+        var testCase = EvalTestCase.builder()
+                .input("Find information about a beer cask whisky")
+                .actualOutput("toolCalls", trace.toolCalls())
+                .actualOutput("output", trace.finalResponse())
+                .expectedOutput("toolCalls", List.of(
+                        ToolCall.of("searchWhisky", Map.of()),
+                        ToolCall.of("extractFromPage", Map.of())
+                ))
+                .metadata("tools", tools)
+                .metadata("tasks", List.of("Search whisky names", "Extract information from a product page"))
+                .build();
+
+        var results = List.of(
+                ToolCallValidityEvaluator.builder().build().evaluate(testCase),
+                ToolCorrectnessEvaluator.builder().build().evaluate(testCase),
+                TaskCompletionEvaluator.builder().judge(judge).build().evaluate(testCase),
+                ToolArgumentHallucinationEvaluator.builder().judge(judge).build().evaluate(testCase)
+        );
+
+        printEvalResults(results);
+    }
+
+    private static void printEvalResults(List<EvalResult> results) {
+        System.out.println("\n--- Evaluation Results ---");
+        results.forEach(result -> {
+            String status = result.success() ? "PASSED ✅" : "FAILED ❌";
+            double threshold = result.threshold() != null ? result.threshold() : 0.0;
+            System.out.printf("Evaluator: %-30s | Status: %s | Score: %.2f (Threshold: %.2f)%n",
+                    result.name(), status, result.score(), threshold);
+            System.out.println("Reason: " + result.reason());
+            if (result.metadata() != null && !result.metadata().isEmpty()) {
+                System.out.println("Metadata: " + result.metadata());
+            }
+            System.out.println("-------------------------");
+        });
+    }
+
 
     private static void printExperimentResult(ExperimentResult result) {
         // Overall metrics
@@ -237,14 +307,21 @@ class EvalApplicationTests {
             System.out.println("Example input: " + itemResult.example().input());
             System.out.println("Expected output: " + itemResult.example().expectedOutput());
             System.out.println("Actual output: " + itemResult.actualOutputs().get("output"));
-            itemResult.evalResults().forEach(evalResult -> {
-
-                System.out.println("Reason: " + evalResult.reason());
-            });
+            printEvalResults(itemResult.evalResults());
         });
 
 // Per evaluator metrics
         System.out.println("\n=== Average Scores by Evaluator ===");
         System.out.println("Answer Quality: " + String.format("%.2f", result.averageScore("Answer Quality")));
+    }
+
+
+    private Map<String, Object> parseArguments(String arguments) {
+        try {
+            return new ObjectMapper().readValue(arguments, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
