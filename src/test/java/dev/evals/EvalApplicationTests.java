@@ -16,7 +16,6 @@ import dev.dokimos.core.evaluators.agents.ToolArgumentHallucinationEvaluator;
 import dev.dokimos.core.evaluators.agents.ToolCallValidityEvaluator;
 import dev.dokimos.core.evaluators.agents.ToolCorrectnessEvaluator;
 import dev.dokimos.springai.SpringAiSupport;
-import dev.evals.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.model.ChatModel;
@@ -29,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -118,8 +118,9 @@ class EvalApplicationTests {
                 .name("test-dataset")
                 .description("Test dataset for evaluation")
                 .addExample(Example.of(
-                        "What is a good peated whisky?",
-                        "Examples of good peated whisky are Benriach Peated Quarter Cask Whisky and Paul John Peated " +
+                        "I am searching for a peated whisky?",
+                        "Examples of good peated whisky are Benriach Peated Quarter Cask Whisky and Saint & Peat 2024" +
+                                " Malt " +
                                 "Malt"
                 ))
                 .build();
@@ -127,7 +128,7 @@ class EvalApplicationTests {
         Task task = example -> {
             String query = example.input();
 
-            var response = chatService.chatRag(query);
+            var response = chatService.chatWithRag(query);
 
             return Map.of(
                     "output", response.content(),
@@ -185,7 +186,7 @@ class EvalApplicationTests {
                         "Context Faithfulness: " + result.averageScore("Context Faithfulness")),
                 () -> assertTrue(result.averageScore("Context Relevance") >= 0.8,
                         "Context Relevance: " + result.averageScore("Context Relevance"))
-                );
+        );
     }
 
     @Test
@@ -236,7 +237,7 @@ class EvalApplicationTests {
     @Test
     void checkValidityToolCalls() {
 
-        List<ToolDefinition> tools = List.of(
+        List<ToolDefinition> toolDefinitions = List.of(
                 ToolDefinition.of("searchWhisky", "Search whisky names", Map.of("query", "string")),
                 ToolDefinition.of("extractFromPage", "Extract information from a product page", Map.of("url", "string"))
         );
@@ -244,38 +245,46 @@ class EvalApplicationTests {
         JudgeLM judge = SpringAiSupport.asJudge(chatModel);
 
         var response = chatService.chatRAGTools("Find information about a beer cask whisky");
-        
-        List<ToolCall> arguments = response.toolCalls().stream().map(tc -> {
-            return ToolCall.of(tc.name(), parseArguments(tc.arguments()));
-        }).toList();
+
+        List<ToolCall> arguments = response.toolCalls().stream()
+                .map(tc -> ToolCall.builder()
+                        .name(tc.name())
+                        .arguments(parseArguments(tc.arguments()))
+                        .result(tc.response())
+                        .build()
+                )
+                .toList();
 
         AgentTrace trace = AgentTrace.builder()
                 .toolCalls(arguments)
-                .addToolCall(ToolCall.of("searchWhisky", Map.of("query", "beer cask whisky")))
-                .addToolCall(ToolCall.of("extractFromPage", Map.of("url", "test")))
                 .finalResponse(response.result().toString())
                 .build();
 
         var testCase = EvalTestCase.builder()
                 .input("Find information about a beer cask whisky")
                 .actualOutput("toolCalls", trace.toolCalls())
-                .actualOutput("output", trace.finalResponse())
                 .expectedOutput("toolCalls", List.of(
                         ToolCall.of("searchWhisky", Map.of()),
                         ToolCall.of("extractFromPage", Map.of())
                 ))
-                .metadata("tools", tools)
-                .metadata("tasks", List.of("Search whisky names", "Extract information from a product page"))
+                .metadata("tools", toolDefinitions)
                 .build();
 
+        EvalResult toolCallValidityResult = ToolCallValidityEvaluator.builder().build().evaluate(testCase);
+        EvalResult toolCorrectnessResult = ToolCorrectnessEvaluator.builder().build().evaluate(testCase);
+        EvalResult toolArgumentHallucinationResult =
+                ToolArgumentHallucinationEvaluator.builder().judge(judge).build().evaluate(testCase);
         var results = List.of(
-                ToolCallValidityEvaluator.builder().build().evaluate(testCase),
-                ToolCorrectnessEvaluator.builder().build().evaluate(testCase),
-                TaskCompletionEvaluator.builder().judge(judge).build().evaluate(testCase),
-                ToolArgumentHallucinationEvaluator.builder().judge(judge).build().evaluate(testCase)
+                toolCallValidityResult,
+                toolCorrectnessResult,
+                toolArgumentHallucinationResult
         );
 
         printEvalResults(results);
+
+        assertThat(toolCallValidityResult.success()).isTrue();
+        assertThat(toolCorrectnessResult.score()).isEqualTo(1.0);
+        assertThat(toolArgumentHallucinationResult.score()).isEqualTo(1.0);
     }
 
     private static void printEvalResults(List<EvalResult> results) {

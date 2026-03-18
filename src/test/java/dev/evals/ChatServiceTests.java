@@ -19,8 +19,8 @@ class ChatServiceTests {
     IndexingPipeline indexingPipeline;
 
     @Test
-    void testChatRag() throws Exception {
-        RagResponse ragResponse = chatService.chatRag("Find me a whisky from Milroy's");
+    void testChatWithRag() throws Exception {
+        RagResponse ragResponse = chatService.chatWithRag("Find me a whisky from Milroy's");
         assertNotNull(ragResponse);
         System.out.println("RAG Response: " + ragResponse.content());
     }
