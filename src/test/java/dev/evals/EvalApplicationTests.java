@@ -119,9 +119,8 @@ class EvalApplicationTests {
                 .description("Test dataset for evaluation")
                 .addExample(Example.of(
                         "I am searching for a peated whisky?",
-                        "Examples of good peated whisky are Benriach Peated Quarter Cask Whisky and Saint & Peat 2024" +
-                                " Malt " +
-                                "Malt"
+                        "Examples of good peated whisky are Benriach Peated Quarter Cask Whisky and " +
+                                "Saint & Peat 2024 Malt"
                 ))
                 .build();
 
@@ -130,9 +129,10 @@ class EvalApplicationTests {
 
             var response = chatService.chatWithRag(query);
 
+            var retrievedContext = String.join(", ", response.foundDocuments());
             return Map.of(
                     "output", response.content(),
-                    "retrievedContext", String.join(", ", response.foundDocuments()),
+                    "retrievedContext", retrievedContext,
                     "retrievalContext", response.foundDocuments()
             );
         };
