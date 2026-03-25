@@ -1,8 +1,6 @@
 package dev.evals;
 
-import dev.evals.model.ChatRequest;
-import dev.evals.model.ChatResponse;
-import dev.evals.model.WhiskySearchResult;
+import dev.evals.model.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,9 +16,11 @@ public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatService chatService;
+    private final WhiskyService whiskyService;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, WhiskyService whiskyService) {
         this.chatService = chatService;
+        this.whiskyService = whiskyService;
         logger.info("ChatController initialized");
     }
 
@@ -42,4 +42,11 @@ public class ChatController {
         return response.result();
     }
 
+    @PostMapping("/whiskychat")
+    @Operation(summary = "Chat about whisky", description = "Sends a message to the AI about whisky, can find whisky by name, find more details and buy the whisky.")
+    @ApiResponse(responseCode = "200", description = "Successful response")
+    public WhiskyResponse whiskyChat(@RequestBody WhiskyRequest request) {
+        logger.info("Received whisky chat request: {}", request);
+        return whiskyService.talkAboutWhisky(request);
+    }
 }

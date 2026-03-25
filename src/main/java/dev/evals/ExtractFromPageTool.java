@@ -105,4 +105,10 @@ public class ExtractFromPageTool {
             return "Error searching for whisky: " + e.getMessage();
         }
     }
+
+    @Tool(description = "Place an order for a whisky using the provided name. Returns a message about the order status.")
+    public String orderWhisky(@ToolParam(description = "The product name to order") String name) {
+        log.info(">>> orderWhisky: {}", name);
+        return "Order for " + name + " has been placed.";
+    }
 }
