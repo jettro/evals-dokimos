@@ -3,6 +3,9 @@ package dev.evals;
 import dev.evals.model.ChatRequest;
 import dev.evals.model.ChatResponse;
 import dev.evals.model.WhiskySearchResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController( "/")
+@Tag(name = "Chat API", description = "Endpoints for interacting with the AI chat and RAG tools")
 public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
@@ -21,6 +25,8 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
+    @Operation(summary = "Simple chat message", description = "Sends a message to the AI and returns the response")
+    @ApiResponse(responseCode = "200", description = "Successful response")
     public ChatResponse chat(@RequestBody ChatRequest request) {
         logger.info("Received chat message: {}", request.message());
         var response = chatService.chat(request.message());
@@ -28,6 +34,8 @@ public class ChatController {
     }
 
     @PostMapping("/chatrag")
+    @Operation(summary = "Chat with RAG tools", description = "Sends a message to the AI using RAG tools and returns the whisky search result")
+    @ApiResponse(responseCode = "200", description = "Successful response")
     public WhiskySearchResult chatRag(@RequestBody ChatRequest request) {
         logger.info("Received chat rag message: {}", request.message());
         var response = chatService.chatRAGTools(request.message());
