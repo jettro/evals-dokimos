@@ -1,7 +1,7 @@
 package dev.evals.model;
 
+import dev.evals.CreditCardGuardrail;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.prompt.Prompt;

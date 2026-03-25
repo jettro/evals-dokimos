@@ -1,6 +1,5 @@
 package dev.evals;
 
-import dev.evals.model.CreditCardGuardrail;
 import dev.evals.model.WhiskyRequest;
 import dev.evals.model.WhiskyResponse;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public class WhiskyService {
 
     public WhiskyService(ChatClient.Builder chatClientBuilder, ExtractFromPageTool extractFromPageTool, ChatMemory chatMemory) {
         this.chatClient = chatClientBuilder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).order(10).build())
                 .build();
         this.extractFromPageTool = extractFromPageTool;
     }
