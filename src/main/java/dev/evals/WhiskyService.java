@@ -60,6 +60,9 @@ public class WhiskyService {
                 .variables(Map.of("message", whiskyRequest.message()))
                 .build();
 
+        Map<String, Object> toolContext = whiskyRequest.ccNumber() != null ?
+                Map.of("ccNumber", (Object) whiskyRequest.ccNumber()) :
+                Map.of();
 
         var result = this.chatClient.prompt()
                 .system(systemPrompt)
@@ -67,6 +70,7 @@ public class WhiskyService {
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, whiskyRequest.conversationId()))
                 .advisors(new CreditCardGuardrail())
                 .tools(extractFromPageTool)
+                .toolContext(toolContext)
                 .call()
                 .content();
 

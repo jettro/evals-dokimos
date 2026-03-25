@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -106,9 +107,17 @@ public class ExtractFromPageTool {
         }
     }
 
-    @Tool(description = "Place an order for a whisky using the provided name. Returns a message about the order status.")
-    public String orderWhisky(@ToolParam(description = "The product name to order") String name) {
-        log.info(">>> orderWhisky: {}", name);
+    @Tool(description = "Place an order for a whisky using the provided name and optional credit card number. Returns a message about the order status.")
+    public String orderWhisky(
+            @ToolParam(description = "The product name to order") String name,
+            ToolContext toolContext
+    ) {
+        if (toolContext.getContext().containsKey("ccNumber")) {
+            var ccNumber = toolContext.getContext().get("ccNumber");
+            log.info(">>> orderWhisky: {}, ccNumber: {}", name, ccNumber);
+        } else {
+            log.info(">>> orderWhisky: {}, ccNumber: NONE", name);
+        }
         return "Order for " + name + " has been placed.";
     }
 }

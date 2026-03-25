@@ -23,7 +23,9 @@ public class CreditCardGuardrail implements CallAdvisor {
         if (!redacted.equals(userText)) {
             log.info("Redacting credit card information from user message");
             var updatedPrompt = chatClientRequest.prompt().augmentUserMessage(redacted);
-            ChatClientRequest updatedRequest = chatClientRequest.mutate().prompt(updatedPrompt).build();
+            ChatClientRequest updatedRequest = chatClientRequest.mutate().prompt(updatedPrompt)
+                    .context(chatClientRequest.context())
+                    .build();
             return callAdvisorChain.nextCall(updatedRequest);
         }
 
