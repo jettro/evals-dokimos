@@ -28,7 +28,7 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
         chatModelObservationContext.addHighCardinalityKeyValue(new KeyValue() {
             @Override
             public String getKey() {
-                return "gen_ai.prompt";
+                return "gen_ai.complete_prompt";
             }
 
             @Override
@@ -46,6 +46,18 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
             @Override
             public String getValue() {
                 return ObservabilityHelper.concatenateStrings(completions);
+            }
+        });
+
+        chatModelObservationContext.addHighCardinalityKeyValue(new KeyValue() {
+            @Override
+            public String getKey() {
+                return "gen_ai.prompt";
+            }
+
+            @Override
+            public String getValue() {
+                return chatModelObservationContext.getRequest().getUserMessage().getText();
             }
         });
 

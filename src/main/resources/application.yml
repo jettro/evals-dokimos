@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: evals
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-5-mini
+          temperature: 1.0
+    chat:
+      observations:
+        include-error-logging: true
+        log-completion: true
+        log-prompt: true
+    tools:
+      observations:
+        include-content: true
+
+# Langfuse Configuration for Observability via OpenTelemetry
+# The opentelemetry-spring-boot-starter reads OTEL_EXPORTER_OTLP_* env vars (not management.otlp.*).
+# Set these environment variables before starting the application:
+#   OTEL_EXPORTER_OTLP_ENDPOINT=https://cloud.langfuse.com/api/public/otel
+#   OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(publicKey:secretKey)>
+#   OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+# For local Langfuse, use: http://localhost:3000/api/public/otel
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0 # Sample 100% of requests for full tracing (adjust in production as needed)
+  observations:
+    annotations:
+      enabled: true # Enable @Observed (if you use observation annotations in code)
+    enable:
+      "http.server.requests": false # Suppress duplicate Micrometer HTTP server spans
+      "http.client.requests": false # Suppress duplicate Micrometer HTTP client spans
+
+otel:
+  instrumentation:
+    spring-webmvc:
+      enabled: false # Suppress duplicate OTel HTTP server spans
+    spring-web:
+      enabled: false # Suppress duplicate OTel HTTP client spans
+
+# Agent Browser
+agent-browser:
+  headed: true
+    
