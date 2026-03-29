@@ -6,6 +6,7 @@ import io.micrometer.observation.ObservationFilter;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.content.Content;
 import org.springframework.ai.observation.ObservabilityHelper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -17,7 +18,8 @@ import java.util.List;
 public class ChatModelCompletionContentObservationFilter implements ObservationFilter {
 
     @Override
-    public Observation.Context map(Observation.Context context) {
+    @NonNull
+    public Observation.Context map(@NonNull Observation.Context context) {
         if (!(context instanceof ChatModelObservationContext chatModelObservationContext)) {
             return context;
         }
@@ -27,11 +29,13 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
 
         chatModelObservationContext.addHighCardinalityKeyValue(new KeyValue() {
             @Override
+            @NonNull
             public String getKey() {
                 return "gen_ai.complete_prompt";
             }
 
             @Override
+            @NonNull
             public String getValue() {
                 return ObservabilityHelper.concatenateStrings(prompts);
             }
@@ -39,11 +43,13 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
 
         chatModelObservationContext.addHighCardinalityKeyValue(new KeyValue() {
             @Override
+            @NonNull
             public String getKey() {
                 return "gen_ai.completion";
             }
 
             @Override
+            @NonNull
             public String getValue() {
                 return ObservabilityHelper.concatenateStrings(completions);
             }
@@ -51,11 +57,13 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
 
         chatModelObservationContext.addHighCardinalityKeyValue(new KeyValue() {
             @Override
+            @NonNull
             public String getKey() {
                 return "gen_ai.prompt";
             }
 
             @Override
+            @NonNull
             public String getValue() {
                 return chatModelObservationContext.getRequest().getUserMessage().getText();
             }
@@ -69,16 +77,13 @@ public class ChatModelCompletionContentObservationFilter implements ObservationF
     }
 
     private List<String> processCompletion(ChatModelObservationContext context) {
-        if (context.getResponse() == null || context.getResponse().getResults() == null
+        if (context.getResponse() == null
                 || CollectionUtils.isEmpty(context.getResponse().getResults())) {
             return List.of();
         }
 
         List<String> completions = new ArrayList<>();
         for (var generation : context.getResponse().getResults()) {
-            if (generation.getOutput() == null) {
-                continue;
-            }
             // Capture text output
             if (StringUtils.hasText(generation.getOutput().getText())) {
                 completions.add(generation.getOutput().getText());
