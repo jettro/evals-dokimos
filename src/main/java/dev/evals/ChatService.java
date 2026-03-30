@@ -1,5 +1,6 @@
 package dev.evals;
 
+import dev.evals.browsing.ExtractFromPageTool;
 import dev.evals.indexing.LuceneDatastore;
 import dev.evals.logging.MyLoggingAdvisor;
 import dev.evals.model.*;

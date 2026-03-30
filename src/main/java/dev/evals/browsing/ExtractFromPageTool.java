@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.browsing;
 
 import dev.evals.indexing.LuceneDatastore;
 import dev.evals.model.SearchRequest;
@@ -12,8 +12,6 @@ import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * A tool that fetches a URL and extracts content from a specific div element.

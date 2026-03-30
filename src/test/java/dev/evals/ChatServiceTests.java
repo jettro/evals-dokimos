@@ -28,7 +28,7 @@ class ChatServiceTests {
     @Test
     void testChatTools() throws Exception {
         // Ensure index is populated
-        indexingPipeline.runIndexing(false);
+        indexingPipeline.runIndexing(true);
 
         WhiskyChatResponse response = chatService.chatRAGTools("Find me information about Togouchi Beer Cask");
         assertNotNull(response);

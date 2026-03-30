@@ -2,9 +2,12 @@ package dev.evals.indexing;
 
 import dev.evals.model.SearchRequest;
 import dev.evals.model.SearchResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,11 +20,14 @@ class LuceneDatastoreTests {
     @Autowired
     IndexingPipeline indexingPipeline;
 
-    @Test
-    void testIndexingAndSearching() throws Exception {
+    @BeforeEach
+    void setUp() throws IOException {
         // Run indexing with recreate = true
         indexingPipeline.runIndexing(true);
+    }
 
+    @Test
+    void testIndexingAndSearching() throws Exception {
         // Search for a specific whisky
         SearchRequest request = new SearchRequest("Milroy's", 5);
         SearchResponse response = luceneDatastore.search(request);
@@ -43,8 +49,6 @@ class LuceneDatastoreTests {
 
     @Test
     void testSearchNoResults() throws Exception {
-        indexingPipeline.runIndexing(false);
-        
         SearchRequest request = new SearchRequest("NonExistentWhisky12345", 5);
         SearchResponse response = luceneDatastore.search(request);
 
@@ -54,7 +58,6 @@ class LuceneDatastoreTests {
 
     @Test
     void testCount() throws Exception {
-        indexingPipeline.runIndexing(true);
         int total = luceneDatastore.count();
         System.out.println("Total documents indexed: " + total);
         assertTrue(total > 0, "There should be more than 0 documents");
@@ -63,7 +66,6 @@ class LuceneDatastoreTests {
 
     @Test
     void testGetIndexInfo() throws Exception {
-        indexingPipeline.runIndexing(true);
         IndexInfo info = luceneDatastore.getIndexInfo();
         
         assertNotNull(info);

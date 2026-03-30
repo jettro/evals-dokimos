@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.observation;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;

@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.browsing;
 
 import dev.evals.logging.MyLoggingAdvisor;
 import dev.evals.model.WhiskySearchResult;

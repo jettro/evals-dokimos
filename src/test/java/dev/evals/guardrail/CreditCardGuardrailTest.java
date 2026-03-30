@@ -1,4 +1,4 @@
-package dev.evals;
+package dev.evals.guardrail;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClientRequest;
