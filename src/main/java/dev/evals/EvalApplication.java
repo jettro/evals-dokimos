@@ -1,25 +1,27 @@
 package dev.evals;
 
+import dev.evals.indexing.IndexingPipeline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.io.IOException;
+
 @SpringBootApplication
 public class EvalApplication {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EvalApplication.class);
 
     public static void main(String[] args) {
-        SpringApplication.run(EvalApplication.class, args);
+        var context = SpringApplication.run(EvalApplication.class, args);
 
-        // Extract knowledge from the RAG based chat
-//        ChatService bean = context.getBean(ChatService.class);
-//        System.out.println("Extracting knowledge from the RAG based chat...");
-//        RagResponse responseChatRag = bean.chatRag("What is a good peated whisky?");
-//        System.out.println(responseChatRag.content());
-
-        // Use the internal knowledge of the LLM
-//        String responseChat = bean.chat("Where is whisky originated from?");
-//        System.out.println(responseChat);
-//        var result = bean.chatTools("Find information about Togouchi Beer Cask");
-//        System.out.println(result);
+        IndexingPipeline indexingPipeline = context.getBean(IndexingPipeline.class);
+        try {
+            indexingPipeline.runIndexing(true);
+        } catch (IOException e) {
+            LOGGER.error("Failed to index documents", e);
+            throw new RuntimeException(e);
+        }
     }
 }

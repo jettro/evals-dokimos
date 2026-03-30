@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.stereotype.Service;
 
@@ -74,8 +75,12 @@ public class WhiskyService {
                 .tools(extractFromPageTool)
                 .toolContext(toolContext)
                 .call()
-                .content();
+                .chatResponse();
 
-        return new WhiskyResponse(result);
+        if (result != null) {
+            Generation generation = result.getResult();
+            return new WhiskyResponse(generation.getOutput().getText());
+        }
+        return new WhiskyResponse("Sorry, I couldn't find anything.");
     }
 }
