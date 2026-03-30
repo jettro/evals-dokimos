@@ -6,33 +6,43 @@ import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+import org.springframework.lang.NonNull;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CreditCardGuardrail implements CallAdvisor {
     private static final Logger log = LoggerFactory.getLogger(CreditCardGuardrail.class);
     private static final String CREDIT_CARD_GUARDRAIL = "credit_card_guardrail";
     
     private static final String CREDIT_CARD_REGEX = "\\b(?:\\d[ -]?){13,16}\\b";
-    
-    @Override
-    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain) {
-        log.info("AdviseCall for CreditCardGuardrail called");
-        String userText = chatClientRequest.prompt().getUserMessage().getText();
-        log.info("User message: {}", userText);
-        String redacted = userText.replaceAll(CREDIT_CARD_REGEX, "CC_AVAILABLE");
+    private static final Pattern CREDIT_CARD_PATTERN = Pattern.compile(CREDIT_CARD_REGEX);
 
-        if (!redacted.equals(userText)) {
-            log.info("Redacting credit card information from user message");
-            var updatedPrompt = chatClientRequest.prompt().augmentUserMessage(redacted);
-            ChatClientRequest updatedRequest = chatClientRequest.mutate().prompt(updatedPrompt)
-                    .context(chatClientRequest.context())
-                    .build();
-            return callAdvisorChain.nextCall(updatedRequest);
+
+    @Override
+    @NonNull
+    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, @NonNull CallAdvisorChain callAdvisorChain) {
+        String userText = chatClientRequest.prompt().getUserMessage().getText();
+        Matcher matcher = CREDIT_CARD_PATTERN.matcher(userText);
+
+        if (!matcher.find()) {
+            log.info("No credit card information found in user message");
+            return requireResponse(callAdvisorChain.nextCall(chatClientRequest));
         }
 
-        return callAdvisorChain.nextCall(chatClientRequest);
+        log.info("Redacting credit card information from user message");
+
+        String redacted = matcher.replaceAll("CC_AVAILABLE");
+
+        ChatClientRequest nextRequest = chatClientRequest.mutate()
+                .prompt(chatClientRequest.prompt().augmentUserMessage(redacted))
+                .build();
+
+        return requireResponse(callAdvisorChain.nextCall(nextRequest));
     }
 
     @Override
+    @NonNull
     public String getName() {
         return CREDIT_CARD_GUARDRAIL;
     }
@@ -40,5 +50,12 @@ public class CreditCardGuardrail implements CallAdvisor {
     @Override
     public int getOrder() {
         return 0;
+    }
+
+    private static ChatClientResponse requireResponse(ChatClientResponse response) {
+        if (response == null) {
+            throw new IllegalStateException("Next advisor in chain returned null");
+        }
+        return response;
     }
 }
