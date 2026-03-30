@@ -1,11 +1,16 @@
 package dev.evals.guardrail;
 
+import io.micrometer.common.KeyValue;
+import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
+import org.springframework.ai.chat.observation.ChatModelObservationContext;
+import org.springframework.ai.observation.ObservabilityHelper;
 import org.springframework.lang.NonNull;
 
 import java.util.regex.Matcher;
@@ -21,7 +26,7 @@ public class CreditCardGuardrail implements CallAdvisor {
 
     @Override
     @NonNull
-    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, @NonNull CallAdvisorChain callAdvisorChain) {
+    public ChatClientResponse adviseCall(@NonNull ChatClientRequest chatClientRequest, @NonNull CallAdvisorChain callAdvisorChain) {
         String userText = chatClientRequest.prompt().getUserMessage().getText();
         Matcher matcher = CREDIT_CARD_PATTERN.matcher(userText);
 
@@ -33,6 +38,15 @@ public class CreditCardGuardrail implements CallAdvisor {
         log.info("Redacting credit card information from user message");
 
         String redacted = matcher.replaceAll("CC_AVAILABLE");
+
+        ObservationRegistry observationRegistry = callAdvisorChain.getObservationRegistry();
+
+        if (observationRegistry.getCurrentObservation() != null) {
+            var context = observationRegistry.getCurrentObservation().getContext();
+            if (context instanceof AdvisorObservationContext advisorObservationContext) {
+                advisorObservationContext.put("usrMsg", redacted);
+            }
+        }
 
         ChatClientRequest nextRequest = chatClientRequest.mutate()
                 .prompt(chatClientRequest.prompt().augmentUserMessage(redacted))
