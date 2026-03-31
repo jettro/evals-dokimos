@@ -14,6 +14,14 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Observation filter to add chat model completion content information to advisor observations. If the completion content
+ * is present, it adds a high cardinality key-value pair to the observation context.
+ * The main part is copied from the original implementation, with minor adjustments to fit the new class and context.
+ * gen_ai.completion - Available as output in Langfuse
+ * gen_ai.prompt - Available as input in Langfuse
+ * gen_ai.complete_prompt - Extra information that shows the full conversation.
+ */
 @Component
 public class ChatModelCompletionContentObservationFilter implements ObservationFilter {
 

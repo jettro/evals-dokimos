@@ -1,6 +1,5 @@
 package dev.evals.guardrail;
 
-import io.micrometer.common.KeyValue;
 import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,13 +8,16 @@ import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
-import org.springframework.ai.chat.observation.ChatModelObservationContext;
-import org.springframework.ai.observation.ObservabilityHelper;
 import org.springframework.lang.NonNull;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static dev.evals.guardrail.GuardrailsKeys.REDACTED_USER_MSG_KEY;
+
+/**
+ * A guardrail that redacts credit card information from user messages. Implements the {@link CallAdvisor} interface.
+ */
 public class CreditCardGuardrail implements CallAdvisor {
     private static final Logger log = LoggerFactory.getLogger(CreditCardGuardrail.class);
     private static final String CREDIT_CARD_GUARDRAIL = "credit_card_guardrail";
@@ -44,7 +46,7 @@ public class CreditCardGuardrail implements CallAdvisor {
         if (observationRegistry.getCurrentObservation() != null) {
             var context = observationRegistry.getCurrentObservation().getContext();
             if (context instanceof AdvisorObservationContext advisorObservationContext) {
-                advisorObservationContext.put("usrMsg", redacted);
+                advisorObservationContext.put(REDACTED_USER_MSG_KEY, redacted);
             }
         }
 

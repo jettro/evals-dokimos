@@ -6,6 +6,10 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 
+/**
+ * Service for interacting with a chat client using browser automation tools. 1. Opens a browser 2. Executes
+ * 3. Closes the browser. 4. Returns the result. This is a very simple example of how to use the browser tool.
+ */
 public class BrowserAutomationChatService {
 
     private final ChatClient chatClient;

@@ -7,6 +7,12 @@ import org.springframework.ai.chat.client.advisor.observation.AdvisorObservation
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import static dev.evals.guardrail.GuardrailsKeys.REDACTED_USER_MSG_KEY;
+
+/**
+ * Observation filter to add credit card guardrail information to advisor observations. If the redacted user message
+ * is present, it adds a high cardinality key-value pair to the observation context.
+ */
 @Component
 public class GuardrailObservationFilter implements ObservationFilter {
     @Override
@@ -16,9 +22,9 @@ public class GuardrailObservationFilter implements ObservationFilter {
             return context;
         }
 
-        String userMsg = advisorObservationContext.get("usrMsg");
+        String redactedUserMessage = advisorObservationContext.get(REDACTED_USER_MSG_KEY);
 
-        if (userMsg != null) {
+        if (redactedUserMessage != null) {
             advisorObservationContext.addHighCardinalityKeyValue(new KeyValue() {
                 @Override
                 @NonNull
@@ -29,7 +35,7 @@ public class GuardrailObservationFilter implements ObservationFilter {
                 @Override
                 @NonNull
                 public String getValue() {
-                    return "Credit Card Guardrail: true with '" + userMsg + "'";
+                    return String.format("Credit Card Guardrail: true with '%s'", redactedUserMessage);
                 }
             });
 

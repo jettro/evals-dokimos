@@ -1,6 +1,6 @@
 package dev.evals;
 
-import dev.evals.browsing.ExtractFromPageTool;
+import dev.evals.browsing.AgenticWhiskyTool;
 import dev.evals.indexing.LuceneDatastore;
 import dev.evals.logging.MyLoggingAdvisor;
 import dev.evals.model.*;
@@ -40,14 +40,14 @@ public class ChatService {
     private final ChatClient.Builder chatClientBuilder;
     private final ChatClient chatClient;
     private final LuceneDatastore luceneDatastore;
-    private final ExtractFromPageTool extractFromPageTool;
+    private final AgenticWhiskyTool agenticWhiskyTool;
 
     public ChatService(ChatClient.Builder chatClientBuilder,
                        LuceneDatastore luceneDatastore,
-                       ExtractFromPageTool extractFromPageTool) {
+                       AgenticWhiskyTool agenticWhiskyTool) {
         this.chatClientBuilder = chatClientBuilder;
         this.luceneDatastore = luceneDatastore;
-        this.extractFromPageTool = extractFromPageTool;
+        this.agenticWhiskyTool = agenticWhiskyTool;
 
         this.chatClient = chatClientBuilder.build();
     }
@@ -166,7 +166,7 @@ public class ChatService {
         history.add(new UserMessage(query));
 
         ToolCallingChatOptions options = ToolCallingChatOptions.builder()
-                .toolCallbacks(ToolCallbacks.from(extractFromPageTool))
+                .toolCallbacks(ToolCallbacks.from(agenticWhiskyTool))
                 .internalToolExecutionEnabled(false)
                 .build();
 

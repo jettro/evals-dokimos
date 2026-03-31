@@ -14,15 +14,16 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 /**
- * A tool that fetches a URL and extracts content from a specific div element.
+ * A tool that fetches a URL and extracts content from a specific div element. Makes
+ * use of Jsoup for HTML parsing and Lucene for indexing and searching.
  */
 @Component
-public class ExtractFromPageTool {
-    private static final Logger log = LoggerFactory.getLogger(ExtractFromPageTool.class);
+public class AgenticWhiskyTool {
+    private static final Logger log = LoggerFactory.getLogger(AgenticWhiskyTool.class);
 
     private final LuceneDatastore luceneDatastore;
 
-    public ExtractFromPageTool(LuceneDatastore luceneDatastore) {
+    public AgenticWhiskyTool(LuceneDatastore luceneDatastore) {
         this.luceneDatastore = luceneDatastore;
     }
 
@@ -36,7 +37,7 @@ public class ExtractFromPageTool {
             "It looks for the element with id 'tab-description' which typically contains " +
             "the main product details and notes.")
     public String extractFromPage(@ToolParam(description = "The URL to extract content from") String url) {
-        log.info(">>> ExtractFromPageTool: fetching {}", url);
+        log.info(">>> AgenticWhiskyTool: fetching {}", url);
         try {
             // Fetch and parse the page
             Document doc = Jsoup.connect(url)
@@ -47,7 +48,7 @@ public class ExtractFromPageTool {
             // Find the specific element
             Element element = doc.getElementById("tab-description");
             if (element == null) {
-                log.warn("<<< ExtractFromPageTool: element 'tab-description' not found at {}", url);
+                log.warn("<<< AgenticWhiskyTool: element 'tab-description' not found at {}", url);
                 return "Error: Element with id 'tab-description' not found on the page.";
             }
 
@@ -63,10 +64,10 @@ public class ExtractFromPageTool {
             
             String result = sb.length() > 0 ? sb.toString().trim() : content;
 
-            log.info("<<< ExtractFromPageTool: OK, extracted {} chars", result.length());
+            log.info("<<< AgenticWhiskyTool: OK, extracted {} chars", result.length());
             return result;
         } catch (Exception e) {
-            log.error("<<< ExtractFromPageTool: error fetching {}: {}", url, e.getMessage());
+            log.error("<<< AgenticWhiskyTool: error fetching {}: {}", url, e.getMessage());
             return "Error fetching the page: " + e.getMessage();
         }
     }

@@ -1,6 +1,6 @@
 package dev.evals;
 
-import dev.evals.browsing.ExtractFromPageTool;
+import dev.evals.browsing.AgenticWhiskyTool;
 import dev.evals.guardrail.CreditCardGuardrail;
 import dev.evals.model.WhiskyRequest;
 import dev.evals.model.WhiskyResponse;
@@ -20,14 +20,14 @@ public class WhiskyService {
     private static final Logger log = LoggerFactory.getLogger(WhiskyService.class);
 
     private final ChatClient chatClient;
-    private final ExtractFromPageTool extractFromPageTool;
+    private final AgenticWhiskyTool agenticWhiskyTool;
 
 
-    public WhiskyService(ChatClient.Builder chatClientBuilder, ExtractFromPageTool extractFromPageTool, ChatMemory chatMemory) {
+    public WhiskyService(ChatClient.Builder chatClientBuilder, AgenticWhiskyTool agenticWhiskyTool, ChatMemory chatMemory) {
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).order(10).build())
                 .build();
-        this.extractFromPageTool = extractFromPageTool;
+        this.agenticWhiskyTool = agenticWhiskyTool;
     }
 
     public WhiskyResponse talkAboutWhisky(WhiskyRequest whiskyRequest) {
@@ -72,7 +72,7 @@ public class WhiskyService {
                 .user(userTemplate.render())
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, whiskyRequest.conversationId()))
                 .advisors(new CreditCardGuardrail())
-                .tools(extractFromPageTool)
+                .tools(agenticWhiskyTool)
                 .toolContext(toolContext)
                 .call()
                 .chatResponse();
