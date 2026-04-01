@@ -238,14 +238,18 @@ class EvalApplicationTests {
     void checkValidityToolCalls() {
 
         List<ToolDefinition> toolDefinitions = List.of(
-                ToolDefinition.of("searchWhisky", "Search whisky names", Map.of("query", "string")),
-                ToolDefinition.of("extractFromPage", "Extract information from a product page", Map.of("url", "string"))
+                ToolDefinition.of("searchWhisky", "Search whisky names",
+                        Map.of("query", "string")),
+                ToolDefinition.of("extractFromPage", "Extract information from a product page",
+                        Map.of("url", "string"))
         );
 
         JudgeLM judge = SpringAiSupport.asJudge(chatModel);
 
+        // Execute the actual call
         var response = chatService.chatRAGTools("Find information about a beer cask whisky");
 
+        // Extract the arguments for the tool calls from the response
         List<ToolCall> arguments = response.toolCalls().stream()
                 .map(tc -> ToolCall.builder()
                         .name(tc.name())
