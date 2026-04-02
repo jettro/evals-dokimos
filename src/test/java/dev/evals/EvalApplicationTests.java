@@ -117,11 +117,19 @@ class EvalApplicationTests {
         Dataset dataset = Dataset.builder()
                 .name("test-dataset")
                 .description("Test dataset for evaluation")
-                .addExample(Example.of(
-                        "I am searching for a peated whisky?",
-                        "Examples of good peated whisky are Benriach Peated Quarter Cask Whisky and " +
-                                "Saint & Peat 2024 Malt"
-                ))
+                .addExamples(
+                        List.of(
+                                Example.of(
+                                        "I am searching for a peated single cask whisky?",
+                                        "Examples of good peated whisky are Yamazakura Asaka " +
+                                                "and Indri Single Cask Peated."
+                                ),
+                                Example.of(
+                                        "I am looking for a whisky from a beer cask.",
+                                        "AN example for a beer cask whisky is Togouchi Beer Cask Malt."
+                                )
+                        )
+                )
                 .build();
 
         Task task = example -> {
